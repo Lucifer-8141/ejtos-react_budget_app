@@ -1,6 +1,4 @@
 import React, { createContext, useReducer } from 'react';
-
-// 5. The reducer - this is used to update the state, based on the action
 export const AppReducer = (state, action) => {
     let budget = 0;
     switch (action.type) {
@@ -30,6 +28,39 @@ export const AppReducer = (state, action) => {
                     ...state
                 }
             }
+            case 'SUBTRACT_EXPENSE':
+    const totalSpent = state.expenses.reduce((acc, expense) => acc + expense.cost, 0);
+    const newTotal = totalSpent - action.payload.cost;
+
+    if (newTotal >= 0) {
+        const existingExpenseIndex = state.expenses.findIndex(expense => expense.name === action.payload.name);
+
+        if (existingExpenseIndex !== -1) {
+            const updatedExpenses = [...state.expenses];
+            updatedExpenses[existingExpenseIndex] = {
+                ...updatedExpenses[existingExpenseIndex],
+                cost: updatedExpenses[existingExpenseIndex].cost - action.payload.cost
+            };
+
+            // Remove expense if its cost becomes zero after subtraction
+            if (updatedExpenses[existingExpenseIndex].cost <= 0) {
+                updatedExpenses.splice(existingExpenseIndex, 1);
+            }
+
+            return {
+                ...state,
+                expenses: updatedExpenses
+            };
+        } else {
+            // Expense not found, nothing to subtract
+            return state;
+        }
+    } else {
+        // Insufficient funds
+        alert("Cannot subtract the expense! Insufficient funds");
+        return state;
+    }
+
             case 'RED_EXPENSE':
                 const red_expenses = state.expenses.map((currentExp)=> {
                     if (currentExp.name === action.payload.name && currentExp.cost - action.payload.cost >= 0) {
